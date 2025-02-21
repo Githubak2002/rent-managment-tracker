@@ -10,6 +10,9 @@
 !.yarn/releases
 !.yarn/versions
 
+# added by dev
+/temp
+
 # testing
 /coverage
 
