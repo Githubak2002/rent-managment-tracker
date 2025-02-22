@@ -29,6 +29,7 @@ export async function POST(req) {
 
     return NextResponse.json({ success: true, token }, { status: 200 });
   } catch (error) {
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    console.log("Error in login route:", error);
+    return NextResponse.json({ error: `Server error in login route: {error}` }, { status: 500 });
   }
 }
