@@ -1,6 +1,5 @@
 "use client";
-
-import React, { use, useDebugValue, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { ArrowLeft, Plus, Edit2, Trash2, Power, PowerOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { RenterForm } from "@/components/RenterForm";
+import RenterForm from "@/components/RenterForm";
 import { Badge } from "@/components/ui/badge";
 
 import { useParams, useRouter } from "next/navigation";
@@ -21,29 +20,32 @@ import DeleteDialog from "@/components/DeleteDialog";
 
 import useStore from "@/lib/store";
 import toast from "react-hot-toast";
+import dayjs from "dayjs";
 
-// import { DeleteDialog } from "@/components/DeleteDialog";
-// import { PaymentForm } from "@/components/PaymentForm";
+
+// ✅ Date Formatting Helper
+const formatDate = (date) => dayjs(date).format("DD/MMMM/YYYY");
 
 const page = () => {
   const params = useParams();
   const router = useRouter();
 
-  const { showDeleteRenterDialog, setShowDeleteRenterDialog, showStatusChangeDialog, setShowStatusChangeDialog } = useStore();
+  const { showDeleteRenterDialog, setShowDeleteRenterDialog, showStatusChangeDialog, setShowStatusChangeDialog, showEditRenter, setShowEditRenter, isSubmitting, setIsSubmitting } = useStore();
 
-  console.log("param.id: ", params.id);
+  // console.log("param.id: ", params.id);
 
   const [renter, setRenter] = useState({});
   const [payments, setPayments] = useState([]);
 
+
   useEffect(() => {
     const id = params.id.toString(); // Ensure the ID is a string
     getRenterDetails(id);
-  }, [params.id]);
+  }, [params.id, showEditRenter]);
 
-  useEffect(() => {
-    console.log("show delete Dialog: ", showDeleteRenterDialog);
-  }, [showDeleteRenterDialog]);
+  // useEffect(() => {
+  //   console.log("show delete Dialog: ", showDeleteRenterDialog);
+  // }, [showDeleteRenterDialog]);
 
   const getRenterDetails = async (id) => {
     try {
@@ -60,7 +62,7 @@ const page = () => {
       if (res.ok) {
         console.log("Renter details:", data.renter);
         // console.log("Renter details payments:", data.renter.payments.length);
-        console.log("type of:", typeof data.renter.payments);
+        // console.log("type of:", typeof data.renter.payments);
         setRenter(data.renter);
         setPayments(data.renter.payments);
       } else {
@@ -71,7 +73,7 @@ const page = () => {
     }
   };
 
-  // === add payment ==
+  // === Add payment ==
   const addPayment = async (paymentData) => {
     try {
       const response = await fetch("/api/payments", {
@@ -97,7 +99,7 @@ const page = () => {
     }
   };
 
-  // === delete Renter ===
+  // === Delete Renter ===
   const deleteRenter = async (renterId) => {
     try {
       const response = await fetch("/api/renters", {
@@ -125,7 +127,7 @@ const page = () => {
     }
   };
 
-  // === toggle active/inactive ===
+  // === Toggle active/inactive ===
   const toggleRenterStatus = async (renterId) => {
     try {
       const response = await fetch("/api/renters", {
@@ -152,6 +154,51 @@ const page = () => {
     }
   };
 
+  // === Update Renter details ===
+  const handleUpdateRenter = async (formData) => {
+    try {
+      setIsSubmitting(true);
+
+      let reqData = {
+        _id: renter._id,
+        moveInDate: formatDate(formData.moveInDate),
+          ...formData
+        };
+
+      const response = await fetch(`/api/renters`, {
+        method : "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials:"include",
+        body: JSON.stringify(reqData),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success("Renter updated successfully!");
+        setShowEditRenter(false);
+      } else {
+        toast.error("Failed to update renter data.");
+      }
+    } catch (error) {
+      console.log("Error updating renter data → ", error);
+      toast.error("Error updating renter data.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // === Default values for updating a renter ===
+  const defaultValues = { 
+    _id: renter._id,
+    name: renter.name,
+    moveInDate: renter.moveInDate ? dayjs(renter.moveInDate).toDate() : new Date(),
+    initialLightMeterReading: renter.initialLightMeterReading || 0,
+    comments: renter.comments || "",
+  }
+   
   return (
     <section className="container mx-auto py-8 px-4">
       <Button
@@ -162,8 +209,8 @@ const page = () => {
         <ArrowLeft className="mr-2 h-4 w-4" /> Back to Home
       </Button>
 
-      {/* { renter?.name && <h2 className="text-2xl font-bold">{renter.name}</h2>} */}
 
+      {/* === RENTER DETAILS === */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
@@ -178,7 +225,7 @@ const page = () => {
             <Button
               variant="outline"
               size="icon"
-              // onClick={() => setShowEditRenter(true)}
+              onClick={() => setShowEditRenter(true)}
             >
               <Edit2 className="h-4 w-4" />
             </Button>
@@ -226,6 +273,8 @@ const page = () => {
             </Button>
           </div>
 
+
+          {/* === RENTER PAYMENTS === */}
           {payments.length > 0 ? (
             <div className="grid gap-4">
               {renter.payments.map((payment) => (
@@ -247,7 +296,7 @@ const page = () => {
                             // setShowEditPayment(true);
                           }}
                         >
-                          <Edit2 className="h-4 w-4" />
+                          <Edit2 className="h-4 w-4 text-blue-400" />
                         </Button>
                         <Button
                           variant="outline"
@@ -257,7 +306,7 @@ const page = () => {
                             // setShowDeletePayment(true);
                           }}
                         >
-                          <Trash2 className="h-4 w-4 text-destructive" />
+                          <Trash2 className="h-4 w-4 text-red-500" />
                         </Button>
                       </div>
                     </div>
@@ -265,20 +314,20 @@ const page = () => {
                     <div className="grid gap-2">
                       <div className="flex justify-between">
                         <span>Rent:</span>
-                        <span>{payment.rentPaid}</span>
+                        <span>₹ {payment.rentPaid}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Light Bill:</span>
-                        <span>{payment.lightBillPaid}</span>
+                        <span>₹ {payment.lightBillPaid}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Water Bill:</span>
-                        <span>{payment.waterBillPaid}</span>
+                        <span>₹ {payment.waterBillPaid}</span>
                       </div>
-                      <div className="flex justify-between font-semibold">
+                      <div className="flex justify-between font-bold">
                         <span>Total:</span>
                         <span>
-                          {payment.lightBillPaid + payment.waterBillPaid}
+                          ₹ {payment.lightBillPaid + payment.waterBillPaid}
                         </span>
                       </div>
                       <div className="flex justify-between text-sm text-muted-foreground">
@@ -307,6 +356,20 @@ const page = () => {
           )}
         </CardContent>
       </Card>
+
+
+
+      {/* === EDIT RENTER DETAILS DIALOG === */}
+      <Dialog open={showEditRenter} onOpenChange={setShowEditRenter}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Update {renter.name} </DialogTitle>
+          </DialogHeader>
+          {/* <RentForm /> */}
+          <RenterForm defaultValues={defaultValues} onSubmit={handleUpdateRenter} isSubmitting={isSubmitting} />
+        </DialogContent>
+      </Dialog>
+
 
       {/* === DELETE DIALOG === */}
       <DeleteDialog

@@ -62,7 +62,7 @@ export async function middleware(request) {
 
 // Specify the routes the middleware should run on
 export const config = {
-  matcher: ['/rent', '/api/renters/:path*', '/api/renterdetails/:path*', '/api/payment', ], // Add routes to match
+  matcher: ['/rent', '/login', '/api/renters/:path*', '/api/renterdetails/:path*', '/api/payment', ]
 };
 
 

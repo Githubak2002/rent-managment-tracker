@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import "antd/dist/reset.css";
-import { useEffect, useState } from "react";
 
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
@@ -22,7 +21,8 @@ const loginSchema = z.object({
 export default function LoginPage() {
 
   const {
-    isAuthenticated,
+    isSubmitting,
+    setIsSubmitting,
     setIsAuthenticated,
   } = useStore();
 
@@ -40,6 +40,9 @@ export default function LoginPage() {
 
   const handleSubmit = async (formData) => {
     try {
+
+      setIsSubmitting(true); 
+
       // Send login request to the server
       const response = await fetch('/api/login', {
         method: 'POST',
@@ -64,31 +67,8 @@ export default function LoginPage() {
       toast.error('An error occurred during login');
     } finally {
       form.reset(defaultValues); // Reset the form
+      setIsSubmitting(false);
     }
-  };
-  
-  const handleSubmit123 = async (formData) => {
-    // console.log("Form data: ", formData);
-    const response = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...formData }),
-    });
-
-    const data = await response.json();
-
-    // console.log("Login api Data: ", data);
-
-    if (response.ok) {
-      localStorage.setItem('token', data.token);
-      toast.success('Login successful!');
-      setIsAuthenticated(true);
-      router.push('/rent');
-    } else {
-      toast.error(data.error || 'Login failed');
-    }
-
-    form.reset(defaultValues);
   };
 
   return (
@@ -116,7 +96,11 @@ export default function LoginPage() {
             </FormItem>
           )} />
 
-          <Button type="submit" className="w-full">Login</Button>
+          <Button type="submit" className="w-full"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Logging in...' : 'Login'}
+          </Button>
         </form>
       </div>
     </section>
