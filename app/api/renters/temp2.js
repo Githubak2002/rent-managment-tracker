@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Renter from "../../../models/renter.model";
-import { validateToken } from "../../../lib/auth";
+
+// import { validateToken } from "../../../lib/auth";
 
 // ✅ Fetch All Renters
 export async function GET(req) {

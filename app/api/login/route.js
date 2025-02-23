@@ -1,8 +1,8 @@
 import { SignJWT } from 'jose';
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import bcrypt from 'bcryptjs';
 import { connectDB } from '@/lib/db'; // Adjust the import based on your project structure
+// import { cookies } from 'next/headers';
 
 export async function POST(req) {
   try {
