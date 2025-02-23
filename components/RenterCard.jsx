@@ -30,7 +30,7 @@ const RenterCard = ({ renter }) => {
       onClick={handleClick}
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-xl font-bold">{renter.name}</CardTitle>
+        <CardTitle className="text-xl font-bold text-purple-500">{renter.name}</CardTitle>
         <Badge variant={renter.active ? "default" : "secondary"}>
           {<renter className="active"></renter> ? "Active" : "Inactive"}
         </Badge>

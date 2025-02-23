@@ -24,6 +24,7 @@ const formSchema = z.object({
 
 
 const RenterForm = ({ defaultValues, onSubmit, isSubmitting }) => {
+
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues,
@@ -87,7 +88,7 @@ const RenterForm = ({ defaultValues, onSubmit, isSubmitting }) => {
 
         {/* ✅ Submit Button */}
         <Button type="submit" className="w-full" disabled={isSubmitting}>
-          {defaultValues._id ? "Update Renter" : "Save Renter"}  {/* Check if it's edit mode */}
+          {defaultValues._id ? "Update Renter" : "Save Renter"} 
         </Button>
       </form>
     </Form>
@@ -132,7 +133,7 @@ export default RenterForm;
 
 //   const {
 //     addRenter,
-//     setShowAddRenter,
+//     setShowForm,
 //     selectedRenter,
 //     updateRenter,
 //     setShowEditRenter,
@@ -195,7 +196,7 @@ export default RenterForm;
 //         setSelectedRenter(null); // ✅ Clear selection after editing
 //       } else {
 //         addRenter(data.newRenter);
-//         setShowAddRenter(false);
+//         setShowForm(false);
 //       }
 //     } else {
 //       toast.error("Failed to save renter");

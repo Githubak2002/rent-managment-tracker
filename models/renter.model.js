@@ -6,8 +6,8 @@ const PaymentSchema = new mongoose.Schema({
   rentPaid: { type: Number, required: true }, // Rent paid in Rs
   lightBillPaid: { type: Number, required: true }, // Light bill paid in Rs
   waterBillPaid: { type: Number, required: true }, // Water bill paid in Rs
-  paymentMode: { type: String, enum: ["cash", "online"], required: true }, // Payment mode (cash/online)
-  onlinePlatform: { type: String, enum: ["paytm", "phonepay", "others"], default: null }, // Online platform (if payment mode is online)
+  paymentMode: { type: String, enum: ["Cash", "Online"], required: true }, // Payment mode (cash/online)
+  onlinePlatform: { type: String, enum: ["Paytm", "PhonePe", "Other"], default: null }, // Online platform (if payment mode is online)
   comments: { type: String, default: "" }, // Additional notes
 });
 

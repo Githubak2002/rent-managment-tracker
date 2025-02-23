@@ -1,6 +1,7 @@
 import React from 'react'
 import FormComponent from './FormComponent'
 import RenterForm from './RenterForm'
+import PaymentForm from '../../components/PaymentForm'
 
 const page = () => {
   return (
@@ -8,7 +9,8 @@ const page = () => {
 
       <br />
       {/* <FormComponent /> */}
-      <RenterForm />
+      {/* <RenterForm /> */}
+      {/* <PaymentForm /> */}
     </div>
   )
 }

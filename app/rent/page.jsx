@@ -15,8 +15,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, 
-  // Trash2, Edit, ToggleLeft, ToggleRight 
+import {
+  Plus,
+  // Trash2, Edit, ToggleLeft, ToggleRight
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -24,7 +25,7 @@ import RenterCard from "@/components/RenterCard";
 import useStore from "@/lib/store"; // ✅ Import Zustand store
 // import { DialogOverlay } from "@radix-ui/react-dialog";
 
-import RenterForm from "./RenterForm";
+// import RenterForm from "./RenterForm";
 
 import RentForm from "@/components/RenterForm";
 import dayjs from "dayjs";
@@ -33,14 +34,13 @@ import dayjs from "dayjs";
 const formatDate = (date) => dayjs(date).format("DD/MMMM/YYYY");
 
 export default function Page() {
-
   const router = useRouter();
 
   const {
     renters,
     setRenters,
-    showAddRenter,
-    setShowAddRenter,
+    showForm,
+    setShowForm,
     isSubmitting,
     setIsSubmitting,
   } = useStore();
@@ -50,8 +50,9 @@ export default function Page() {
       await fetchRenters();
     };
     getRenters();
-  }, [showAddRenter]);
+  }, [showForm]);
 
+  // === Fetch Renters from the API ===
   const fetchRenters = async () => {
     try {
       const res = await fetch("/api/renters", {
@@ -84,7 +85,7 @@ export default function Page() {
     }
   };
 
-  // === form submission for adding Renter === 
+  // === form submission for adding Renter ===
   const handleAddRenter = async (formData) => {
     try {
       setIsSubmitting(true);
@@ -106,7 +107,7 @@ export default function Page() {
       const data = await response.json();
 
       if (data.success) {
-        setShowAddRenter(false);
+        setShowForm(false);
         toast.success("Renter added successfully!");
       } else {
         toast.error("Failed to add renter.");
@@ -124,20 +125,14 @@ export default function Page() {
     moveInDate: new Date(),
     initialLightMeterReading: 0,
     comments: "",
-  };  
+  };
 
   return (
     <section className="container mx-auto py-8 px-4">
       <div className="container mx-auto py-8 px-4">
-        {/* <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Rent Management</h1>
-          <Button onClick={() => setShowAddRenter(true)}>
-            <Plus className="mr-2 h-4 w-4" /> Add Renter
-          </Button>
-        </div> */}
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-lg sm:text-xl font-bold">Rent Management</h1>
-          <Button onClick={() => setShowAddRenter(true)}>
+          <Button onClick={() => setShowForm(true)}>
             <Plus className="mr-2 h-4 w-4" /> Add Renter
           </Button>
         </div>
@@ -175,26 +170,19 @@ export default function Page() {
         </div>
 
         {/* === Dialog for Adding Renter === */}
-        <Dialog open={showAddRenter} onOpenChange={setShowAddRenter}>
+        <Dialog open={showForm} onOpenChange={setShowForm}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Add New Renter </DialogTitle>
             </DialogHeader>
             {/* <RentForm /> */}
-            <RentForm defaultValues={defaultValues} onSubmit={handleAddRenter} isSubmitting={isSubmitting} />
+            <RentForm
+              defaultValues={defaultValues}
+              onSubmit={handleAddRenter}
+              isSubmitting={isSubmitting}
+            />
           </DialogContent>
         </Dialog>
-
-        {/* <Dialog open={showAddRenter} onOpenChange={setShowAddRenter}>
-        <DialogOverlay className="bg-white/50" />
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add New Renter</DialogTitle>
-            </DialogHeader>
-            <RenterForm />
-          </DialogContent>
-        </Dialog> */}
-
       </div>
     </section>
   );

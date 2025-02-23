@@ -74,7 +74,7 @@ export async function POST(request) {
       lightBillPaid,
       waterBillPaid,
       paymentMode,
-      onlinePlatform: paymentMode === "online" ? onlinePlatform : null,
+      onlinePlatform: paymentMode === "Online" ? onlinePlatform : null,
       comments,
     };
 

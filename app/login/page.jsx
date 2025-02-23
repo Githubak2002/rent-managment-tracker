@@ -11,7 +11,7 @@ import "antd/dist/reset.css";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
-import useStore from "@/lib/store";
+import useStore from "../../lib/store";
 
 const loginSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
@@ -73,7 +73,7 @@ export default function LoginPage() {
 
   return (
     <Form {...form}>
-    <section className="flex min-h-screen items-center justify-center bg-gray-100">
+    <section className="flex min-h-[80vh] items-center justify-center bg-gray-100 px-3">
       <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-sm">
         <h2 className="text-xl font-bold mb-4 text-center">Admin Login</h2>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 p-4">
@@ -96,10 +96,12 @@ export default function LoginPage() {
             </FormItem>
           )} />
 
-          <Button type="submit" className="w-full"
+          <Button 
+            type="submit" 
+            className="w-full"
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Logging in...' : 'Login'}
+            {isSubmitting ? <b>Logging in...</b> : <b>Login</b>}
           </Button>
         </form>
       </div>
