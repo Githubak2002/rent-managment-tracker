@@ -184,7 +184,6 @@ import "antd/dist/reset.css";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
 import useStore from "@/lib/store";
-import { useRouter } from "next/navigation";
 
 // ✅ Define the Zod Schema
 const formSchema = z.object({
@@ -198,7 +197,6 @@ const formSchema = z.object({
 const formatDate = (date) => dayjs(date).format("DD/MMMM/YYYY");
 
 const RenterForm = () => {
-  const router = useRouter();
   const {
     addRenter,
     setShowAddRenter,
@@ -273,7 +271,7 @@ const RenterForm = () => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 p-4">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 p-4 bg-white">
         {/* ✅ Name Field */}
         <FormField control={form.control} name="name" render={({ field }) => (
           <FormItem>

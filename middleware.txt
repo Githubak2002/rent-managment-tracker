@@ -1,0 +1,149 @@
+// import { NextResponse } from "next/server";
+// import jwt from "jsonwebtoken";
+// import { cookies } from "next/headers";
+
+// // export async function middleware(request) {
+// //   // Get the token from the cookie
+// //   const token = request.cookies.get("auth-token")?.value;
+// //   const allCookies = await cookies();
+// //   const token213 = allCookies.get("auth-token");
+
+// //   // If no token is found, return a 401 Unauthorized response
+// //   if (!token) {
+// //     return NextResponse.json(
+// //       { success: false, message: "Unauthorized: No token provided" },
+// //       { status: 401 }
+// //     );
+// //   }
+
+// //   try {
+// //     // console.log("Token: ", token);
+ 
+// //     // Verify the token
+// //     // const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+// //     // console.log("decoded: ", decoded);
+
+// //     // Attach the decoded user data to the request object
+// //     // request.user = decoded;
+// //     request.token = token;
+
+// //     // Continue to the requested route
+// //     return NextResponse.next();
+// //   } catch (error) {
+// //     console.error("Token verification failed:", error.message);
+// //     // If the token is invalid, return a 401 Unauthorized response
+// //     return NextResponse.json(
+// //       { success: false, message: "Unauthorized: Invalid token" },
+// //       { status: 401 }
+// //     );
+// //   }
+// // }
+
+// // Apply middleware to specific routes
+
+// export async function middleware(request) {
+//   // Get the token from the cookie
+//   // const token = request.cookies.get("auth-token")?.value;
+//   const allCookies = await cookies();
+//   const token = allCookies.get("auth-token")?.value;
+
+//   // If no token is found, return a 401 Unauthorized response
+//   if (!token) {
+//     return NextResponse.json(
+//       { success: false, message: "Unauthorized: No token provided" },
+//       { status: 401 }
+//     );
+//   }
+
+//   try {
+//     console.log("Token: ", token);
+ 
+//     // Verify the token
+//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+//     console.log("decoded: ", decoded);
+
+//     // Attach the decoded user data to the request object
+//     request.user = decoded;
+
+//     // Continue to the requested route
+//     return NextResponse.next();
+//   } catch (error) {
+//     console.error("Token verification failed:", error.message);
+//     // If the token is invalid, return a 401 Unauthorized response
+//     return NextResponse.json(
+//       { success: false, message: "Unauthorized: Invalid token" },
+//       { status: 401 }
+//     );
+//   }
+// }
+
+// export const config = {
+//   matcher: ["/api/renters/:path*"], // Protect all routes under /api/renters
+//   runtime: "nodejs", 
+// };
+
+
+// import { NextResponse } from 'next/server';
+// import jwt from 'jsonwebtoken';
+
+// export function middleware(request) {
+//   // Log the request path
+//   console.log('Middleware executed for:', request.nextUrl.pathname);
+
+//   const path = request.nextUrl.pathname;
+//   if(path === '/login' ) {
+//     return NextResponse.next();
+//   }
+
+//   // Get the token from the Authorization header
+//   const token = request.headers.get('Authorization')?.split(' ')[1]; // Bearer <token>
+
+//   // If no token is provided, redirect to login page
+//   if (!token) {
+//     return NextResponse.redirect(new URL('/login', request.url)); // Redirect to login page
+//   }
+
+//   try {
+//     // Verify the JWT token using your secret key
+//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+//     console.log('Decoded token:', decoded); // Optionally log the decoded token
+
+//     // Attach the decoded token to the request for further use
+//     request.user = decoded;
+
+//     // Continue the request
+//     return NextResponse.next();
+//   } catch (error) {
+//     console.error('Token verification failed:', error.message);
+
+
+//     // If token is invalid, redirect to login page
+//     return NextResponse.redirect(new URL('/login', request.url)); // Redirect to login page
+//   }
+// }
+
+// // Specify which routes should use this middleware
+// export const config = {
+//   matcher: ['/rent', '/form'], // Match /rent and /form routes
+// };
+
+
+
+// import { NextResponse } from 'next/server';
+
+// export function middleware(request) {
+//   // Log the request path
+//   console.log('Middleware executed for:', request.nextUrl.pathname);
+
+//   // Add a custom header to the response
+//   // const response = NextResponse.next();
+//   // response.headers.set('x-custom-header', 'hello-world');
+
+//   return NextResponse.next();
+// }
+
+// export const config = {
+//   matcher: '/rent', // Match all routes under /dashboard
+// };
