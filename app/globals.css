@@ -34,3 +34,27 @@ body {
   justify-content: center;
   align-items: center;
 }
+
+
+
+
+
+
+/* Custom scrollbar with gradient */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 3px; /* Set width of scrollbar */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #4c6ef5, #3f8fef); /* Gradient colors */
+  border-radius: 5px; /* Round the scrollbar thumb */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #6f90f9, #56a7f5); /* Lighter gradient on hover */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background-color: #f1f1f1; /* Light track background */
+  border-radius: 5px;
+}

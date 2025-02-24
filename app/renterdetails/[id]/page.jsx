@@ -429,20 +429,37 @@ const page = () => {
       />
 
 
-       {/* === Dialog for PAYMENT form === */}
-       <Dialog open={showForm} onOpenChange={setShowForm}>
+      {/* === Dialog for PAYMENT form === */}
+      {/* <Dialog open={showForm} onOpenChange={setShowForm}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Add New Payment</DialogTitle>
             </DialogHeader>
-            {/* <RentForm /> */}
             <PaymentForm 
               defaultValues={addPaymentDefaultValues} 
-              // onSubmit={add} 
               onSubmit={handleAddPayment} 
               isSubmitting={isSubmitting} />
           </DialogContent>
-        </Dialog>
+      </Dialog> */}
+
+<Dialog open={showForm} onOpenChange={setShowForm} className="mx-3">
+  <DialogContent className="p-4 max-w-3xl mx-auto">
+    <div className="space-y-4"> {/* This will ensure there's space between the dialog sections */}
+      <DialogHeader>
+        <DialogTitle>Add New Payment</DialogTitle>
+      </DialogHeader>
+
+      <div className="overflow-y-auto max-h-[70vh] px-3 custom-scrollbar"> {/* Makes the form scrollable */}
+        <PaymentForm
+          defaultValues={addPaymentDefaultValues}
+          onSubmit={handleAddPayment}
+          isSubmitting={isSubmitting}
+        />
+      </div>
+    </div>
+  </DialogContent>
+</Dialog>
+
 
     </section>
   );
