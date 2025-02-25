@@ -23,23 +23,37 @@ import toast from "react-hot-toast";
 import dayjs from "dayjs";
 import PaymentForm from "@/components/PaymentForm";
 
-import {formatDate} from "@/lib/utils";
-
-
 // ✅ Date Formatting Helper
-// const formatDate = (date) => dayjs(date).format("DD/MMMM/YYYY");
+const formatDate = (date) => dayjs(date).format("DD/MMMM/YYYY");
+
+const toggleDefault = "bg-gradient-to-r from-[#8b6add] to-[#425bc3]";
+const toggleSecondary =  "border-transparent bg-neutral-100 text-neutral-900 hover:bg-neutral-100/80";
 
 const page = () => {
   const params = useParams();
   const router = useRouter();
 
-  const { showDeleteRenterDialog, setShowDeleteRenterDialog, showStatusChangeDialog, setShowStatusChangeDialog, showEditRenter, setShowEditRenter, isSubmitting, setIsSubmitting, showForm, setShowForm, } = useStore();
+  const {
+    showDeleteRenterDialog,
+    setShowDeleteRenterDialog,
+    showStatusChangeDialog,
+    setShowStatusChangeDialog,
+    showEditRenter,
+    setShowEditRenter,
+    isSubmitting,
+    setIsSubmitting,
+    showForm,
+    setShowForm,
+
+    showDeletePaymentDialog,
+    setShowDeletePaymentDialog,
+  } = useStore();
 
   // console.log("param.id: ", params.id);
 
   const [renter, setRenter] = useState({});
   const [payments, setPayments] = useState([]);
-
+  const [paymentId, setPaymentId] = useState(null);
 
   useEffect(() => {
     const id = params.id.toString(); // Ensure the ID is a string
@@ -82,12 +96,13 @@ const page = () => {
   const handleAddPayment = async (formData) => {
     try {
       setIsSubmitting(true);
-      console.log("Form data: ", formData);
+
+      // console.log("Form data: ", formData);
 
       const formattedData = {
         renterId: renter._id,
-        // moveInDate: formatDate(formData.moveInDate),
         ...formData,
+        // moveInDate: formatDate(formData.moveInDate),
       };
 
       const response = await fetch("/api/payment", {
@@ -114,7 +129,6 @@ const page = () => {
       setIsSubmitting(false);
     }
   };
-
 
   // === Delete Renter ===
   const deleteRenter = async (renterId) => {
@@ -178,16 +192,16 @@ const page = () => {
 
       let reqData = {
         _id: renter._id,
+        ...formData,
         moveInDate: formatDate(formData.moveInDate),
-          ...formData
-        };
+      };
 
       const response = await fetch(`/api/renters`, {
-        method : "PUT",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        credentials:"include",
+        credentials: "include",
         body: JSON.stringify(reqData),
       });
 
@@ -207,14 +221,49 @@ const page = () => {
     }
   };
 
+  // === Delete a Payment of a Renter ===
+  const deletePayment = async (renterId, paymentId) => {
+    try {
+      setIsSubmitting(true);
+      const response = await fetch("/api/payment", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ renterId, paymentId }),
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        // console.log(data.msg); 
+        setShowDeletePaymentDialog(false);
+        toast.success("Payment deleted successfully!");
+        getRenterDetails(renterId);
+        // You can update your UI or refetch data to show updated payments
+      } else {
+        console.error(data.msg); // Handle error message
+      }
+    } catch (error) {
+      console.error("Error while deleting payment:", error);
+      toast.error("Error while deleting payment.");
+    }
+    finally{
+      setIsSubmitting(false);
+    }
+  };
+
   // === Default values for updating a renter ===
-  const updateFormDefaultValues = { 
+  const updateFormDefaultValues = {
     _id: renter._id,
     name: renter.name,
-    moveInDate: renter.moveInDate ? dayjs(renter.moveInDate).toDate() : new Date(),
+    moveInDate: renter.moveInDate
+      ? dayjs(renter.moveInDate).toDate()
+      : new Date(),
     initialLightMeterReading: renter.initialLightMeterReading || 0,
     comments: renter.comments || "",
-  }
+  };
 
   // === Default values for add payment form ===
   const addPaymentDefaultValues = {
@@ -224,12 +273,10 @@ const page = () => {
     lightBillPaid: 0,
     waterBillPaid: 0,
     paymentMode: "Cash",
-    onlinePlatform: "",  // updated from onlinePaymentType
-    comments: "",  // updated from comment
+    onlinePlatform: "", // updated from onlinePaymentType
+    comments: "", // updated from comment
   };
 
-  
-   
   return (
     <section className="container mx-auto py-8 px-4">
       <Button
@@ -240,14 +287,17 @@ const page = () => {
         <ArrowLeft className="mr-2 h-4 w-4 " /> Back to Home
       </Button>
 
-
       {/* === RENTER DETAILS === */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle className="text-2xl font-bold text-purple-500">{renter.name}</CardTitle>
+            <CardTitle className="text-2xl font-bold text-purple-500">
+              {renter.name}
+            </CardTitle>
             <div className="flex items-center gap-2 mt-2">
-              <Badge variant={renter.active ? "default" : "secondary"}>
+              <Badge className={renter.active ? toggleDefault : toggleSecondary}>
+              {/* <Badge variant={renter.active ? "default" : "secondary"}> */}
+
                 {renter.active ? "Active" : "Inactive"}
               </Badge>
             </div>
@@ -284,38 +334,44 @@ const page = () => {
         </CardHeader>
 
         <CardContent>
-          <div className="flex-col flex sm:grid sm:grid-cols-2 sm:gap-4 mb-6">
+          <div className="flex-col flex sm:grid sm:grid-cols-2 sm:gap-4 ">
             <div className="flex justify-between sm:block">
-              <p className="">Move-in Date</p>
-              <p className="text-sm sm:text-lg font-bold">{renter.moveInDate}</p>
-            </div>
-            <div className="flex justify-between sm:block">
-              <p className="">
-                Initial Light Meter Reading
+              <p className="mb-1">Move-in Date</p>
+              <p className="text-sm sm:text-lg font-bold">
+                {renter.moveInDate}
               </p>
-              <p className="text-lg font-bold">{renter.initialLightMeterReading}</p>
             </div>
+            <div className="flex justify-between sm:block">
+              <p className="mb-1">Initial Light Meter Reading</p>
+              <p className="text-lg font-bold">
+                {renter.initialLightMeterReading}
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-col sm:bloc mb-3">
+            <p className="mb-1">Commetns</p>
+            <p className=" text-md text-[#797b7f]">{renter.comments}</p>
           </div>
 
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold">Payment History</h3>
-            <Button
-              onClick={() => setShowForm(true)}
-            >
+            <Button onClick={() => setShowForm(true)} className={`${toggleDefault}`}>
               <Plus className="mr-2 h-4 w-4" /> Add Payment
             </Button>
           </div>
 
-
           {/* === RENTER PAYMENTS === */}
           {payments.length > 0 ? (
-            <div className="grid gap-4">
-              {renter.payments.map((payment) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* <div className="grid gap-4"> */}
+              {renter.payments.reverse().map((payment) => (
                 <Card key={payment._id}>
                   <CardContent className="pt-6">
                     <div className="flex justify-between items-start mb-4">
                       <div>
-                        <div className="font-semibold">{formatDate(payment.date)}</div>
+                        <div className="font-semibold">
+                          {formatDate(payment.date)}
+                        </div>
                         <div className="text-sm text-muted-foreground">
                           Reading: {payment.lightMeterReading}
                         </div>
@@ -334,7 +390,10 @@ const page = () => {
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={() => {
+                          onClick={() => { 
+                            console.log("delete btn paymentId: ",payment._id)
+                            setPaymentId(payment._id);
+                            setShowDeletePaymentDialog(true);
                             // setSelectedPaymentId(payment.id);
                             // setShowDeletePayment(true);
                           }}
@@ -360,10 +419,13 @@ const page = () => {
                       <div className="flex justify-between font-bold">
                         <span>Total:</span>
                         <span>
-                          ₹ {payment.lightBillPaid + payment.waterBillPaid + payment.rentPaid}
+                          ₹{" "}
+                          {payment.lightBillPaid +
+                            payment.waterBillPaid +
+                            payment.rentPaid}
                         </span>
                       </div>
-                      <div className="flex justify-between text-sm text-muted-foreground">
+                      <div className="flex justify-between text-sm text-[#797b7f]">
                         <span>Payment Mode:</span>
                         <span>
                           {payment.paymentMode}
@@ -371,10 +433,10 @@ const page = () => {
                             ` (${payment.onlinePlatform})`}
                         </span>
                       </div>
-                      {payment.comment && (
-                        <div className="mt-2 text-sm">
-                          <span className="text-muted-foreground">Note: </span>
-                          {payment.comment}
+                      {payment.comments && (
+                        <div className="mt-0 text-sm text-[#797b7f]">
+                          <span className="">Note: </span>
+                          {payment.comments}
                         </div>
                       )}
                     </div>
@@ -390,21 +452,22 @@ const page = () => {
         </CardContent>
       </Card>
 
-
-
-      {/* === EDIT RENTER DETAILS DIALOG === */}
+      {/* === DIALOG - EDIT RENTER DETAILS === */}
       <Dialog open={showEditRenter} onOpenChange={setShowEditRenter}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Update {renter.name} </DialogTitle>
           </DialogHeader>
           {/* <RentForm /> */}
-          <RenterForm defaultValues={updateFormDefaultValues} onSubmit={handleUpdateRenter} isSubmitting={isSubmitting} />
+          <RenterForm
+            defaultValues={updateFormDefaultValues}
+            onSubmit={handleUpdateRenter}
+            isSubmitting={isSubmitting}
+          />
         </DialogContent>
       </Dialog>
 
-
-      {/* === DELETE DIALOG === */}
+      {/* === DIALOG - DELETE RENTER === */}
       <DeleteDialog
         isOpen={showDeleteRenterDialog}
         onClose={() => setShowDeleteRenterDialog(false)}
@@ -414,7 +477,7 @@ const page = () => {
         requireConfirmation={true}
       />
 
-      {/* === TOGGLE ACTIVE/INACTIVE DIALOG === */}
+      {/* === DIALOG - TOGGLE ACTIVE/INACTIVE === */}
       <DeleteDialog
         isOpen={showStatusChangeDialog}
         onClose={() => setShowStatusChangeDialog(false)}
@@ -428,37 +491,37 @@ const page = () => {
         requireConfirmation={false}
       />
 
-
-      {/* === Dialog for PAYMENT form === */}
-      {/* <Dialog open={showForm} onOpenChange={setShowForm}>
-          <DialogContent>
+      {/* === DIALOG - PAYMENT FORM === */}
+      <Dialog open={showForm} onOpenChange={setShowForm} className="mx-3">
+        <DialogContent className="p-4 max-w-3xl mx-auto">
+          <div className="space-y-4">
+            {" "}
+            {/* This will ensure there's space between the dialog sections */}
             <DialogHeader>
               <DialogTitle>Add New Payment</DialogTitle>
             </DialogHeader>
-            <PaymentForm 
-              defaultValues={addPaymentDefaultValues} 
-              onSubmit={handleAddPayment} 
-              isSubmitting={isSubmitting} />
-          </DialogContent>
-      </Dialog> */}
+            <div className="overflow-y-auto max-h-[70vh] px-3 custom-scrollbar">
+              {" "}
+              {/* Makes the form scrollable */}
+              <PaymentForm
+                defaultValues={addPaymentDefaultValues}
+                onSubmit={handleAddPayment}
+                isSubmitting={isSubmitting}
+              />
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
-<Dialog open={showForm} onOpenChange={setShowForm} className="mx-3">
-  <DialogContent className="p-4 max-w-3xl mx-auto">
-    <div className="space-y-4"> {/* This will ensure there's space between the dialog sections */}
-      <DialogHeader>
-        <DialogTitle>Add New Payment</DialogTitle>
-      </DialogHeader>
-
-      <div className="overflow-y-auto max-h-[70vh] px-3 custom-scrollbar"> {/* Makes the form scrollable */}
-        <PaymentForm
-          defaultValues={addPaymentDefaultValues}
-          onSubmit={handleAddPayment}
-          isSubmitting={isSubmitting}
-        />
-      </div>
-    </div>
-  </DialogContent>
-</Dialog>
+      {/* === DIALOG - DELETE A PATMENT === */}
+      <DeleteDialog
+        isOpen={showDeletePaymentDialog}
+        onClose={() => setShowDeletePaymentDialog(false)}
+        onConfirm={() => deletePayment(renter._id,paymentId)}
+        title="Delete Payment"
+        description="Are you sure you want to delete this Payment? This action cannot be undone."
+        requireConfirmation={true}
+      />
 
 
     </section>

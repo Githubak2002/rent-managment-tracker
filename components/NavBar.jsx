@@ -78,27 +78,30 @@ export default function NavBar() {
   // }
 
   return (
-    <nav className="w-full bg-gradient-to-r from-[#1e293b] via-[#334155] to-[#475569] text-white py-3 px-6 flex justify-between items-center shadow-md">
+    <nav className="w-full bg-gradient-to-r from-[#5325c7ea] to-[#7299d0] text-white py-3 px-6 flex justify-between items-center shadow-md">
+    {/* <nav className="w-full bg-gradient-to-r from-[#5325c7bf] via-[#334155] to-[#475569] text-white py-3 px-6 flex justify-between items-center shadow-md"> */}
       {/* Logo on the Left */}
-      <h1 className="text-xl sm:text-2xl font-semibold tracking-wide">Rent Management</h1>
+      <button onClick={() => router.push("/")} className="text-xl sm:text-2xl font-semibold tracking-wide">Rent Management</button>
 
       {/* Authentication Buttons on the Right */}
       <div className="ml-auto">
         {!isAuthenticated ? (
           <Button
+            variant="ghost"
             onClick={() => {
               router.push("/login");
             }}
-            className="flex items-center gap-2 px-4 py-2 bg-white text-gray-800 hover:bg-gray-200 transition"
+            className="flex items-center gap-2 px-4 py-2 bg-transparent hover:bg-transparent transition-all hover:scale-125 text-xl sm:text-2xl "
           >
-            <LogIn className="w-5 h-5" />
+            <LogIn className="w-6 h-6" />
             Login
           </Button>
         ) : (
           <Button
             variant="ghost"
             onClick={handleLogout}
-            className="flex items-center gap-2 text-white hover:scale-100 transition-all"
+            className="flex items-center gap-2 px-4 py-2 bg-transparent hover:bg-transparent transition-all hover:scale-125 text-xl sm:text-2xl "
+            // className="flex items-center gap-2 text-white hover:scale-100 transition-all"
           >
             <LogOut className="w-5 h-5" />
             Logout

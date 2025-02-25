@@ -26,7 +26,7 @@ const formSchema = z.object({
   lightMeterReading: z.number().min(0, "Light meter reading cannot be negative"),
   paymentMode: z.string().nonempty("Payment mode is required"),
   onlinePlatform: z.string().optional(), 
-  comment: z.string().optional(),
+  comments: z.string().optional(),
 });
 
 

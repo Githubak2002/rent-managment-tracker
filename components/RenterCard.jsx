@@ -9,6 +9,8 @@ import { useRouter } from "next/navigation";
 
 import React from 'react'
 
+const toggleDefault = "bg-gradient-to-r from-[#8b6add] to-[#425bc3]";
+const toggleSecondary =  "border-transparent bg-neutral-100 text-neutral-900 hover:bg-neutral-100/80";
 
 const RenterCard = ({ renter }) => {
 
@@ -31,7 +33,8 @@ const RenterCard = ({ renter }) => {
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-xl font-bold text-purple-500">{renter.name}</CardTitle>
-        <Badge variant={renter.active ? "default" : "secondary"}>
+        <Badge className={renter.active ? toggleDefault : toggleSecondary}>
+        {/* <Badge variant={renter.active ? "default" : "secondary"}> */}
           {<renter className="active"></renter> ? "Active" : "Inactive"}
         </Badge>
       </CardHeader>

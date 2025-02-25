@@ -33,6 +33,8 @@ import dayjs from "dayjs";
 // ✅ Date Formatting Helper
 const formatDate = (date) => dayjs(date).format("DD/MMMM/YYYY");
 
+const toggleDefault = "bg-gradient-to-r from-[#8b6add] to-[#425bc3]";
+
 export default function Page() {
   const router = useRouter();
 
@@ -132,7 +134,7 @@ export default function Page() {
       <div className="container mx-auto py-8 px-4">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-lg sm:text-xl font-bold">Rent Management</h1>
-          <Button onClick={() => setShowForm(true)}>
+          <Button onClick={() => setShowForm(true)} className={`${toggleDefault}`}>
             <Plus className="mr-2 h-4 w-4" /> Add Renter
           </Button>
         </div>
@@ -145,6 +147,7 @@ export default function Page() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {renters
                     .filter((renter) => renter.active)
+                    .reverse()
                     .map((renter) => (
                       <RenterCard key={renter._id} renter={renter} />
                     ))}
@@ -156,6 +159,7 @@ export default function Page() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {renters
                     .filter((renter) => renter.active === false)
+                    .reverse()
                     .map((renter) => (
                       <RenterCard key={renter._id} renter={renter} />
                     ))}
