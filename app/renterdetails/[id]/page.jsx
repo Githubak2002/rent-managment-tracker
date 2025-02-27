@@ -44,9 +44,10 @@ const page = () => {
     setIsSubmitting,
     showForm,
     setShowForm,
-
     showDeletePaymentDialog,
     setShowDeletePaymentDialog,
+    showEditPaymentDialog,
+    setShowEditPaymentDialog,
   } = useStore();
 
   // console.log("param.id: ", params.id);
@@ -54,6 +55,16 @@ const page = () => {
   const [renter, setRenter] = useState({});
   const [payments, setPayments] = useState([]);
   const [paymentId, setPaymentId] = useState(null);
+  const [updatePaymentDefaultValues, setUpdatePaymentDefaultValues] = useState({
+    date: new Date(),
+    rentPaid: 0,
+    lightBillPaid: 0,
+    waterBillPaid: 0,
+    lightMeterReading: 0,
+    paymentMode: "Cash",
+    onlinePlatform: "",
+    comments: "",
+  });
 
   useEffect(() => {
     const id = params.id.toString(); // Ensure the ID is a string
@@ -102,7 +113,7 @@ const page = () => {
       const formattedData = {
         renterId: renter._id,
         ...formData,
-        // moveInDate: formatDate(formData.moveInDate),
+        date: formatDate(formData.date),
       };
 
       const response = await fetch("/api/payment", {
@@ -117,6 +128,7 @@ const page = () => {
       const data = await response.json();
 
       if (data.success) {
+        console.log("Payment added successfully:", data.payment);
         setShowForm(false);
         toast.success("Payment added successfully!");
       } else {
@@ -189,7 +201,6 @@ const page = () => {
   const handleUpdateRenter = async (formData) => {
     try {
       setIsSubmitting(true);
-
       let reqData = {
         _id: renter._id,
         ...formData,
@@ -253,6 +264,85 @@ const page = () => {
       setIsSubmitting(false);
     }
   };
+
+  // === Update a Payment of a Renter ===
+  const updatePayment = async (renterId, paymentId, formData) => {
+    try {
+      // setIsSubmitting(true);
+
+      // console.dir({ renterId, paymentId, formData });
+
+      let formatedData = {
+        ...formData,
+        date: formatDate(formData.date),
+      };
+
+      const response = await fetch("/api/payment", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ renterId, paymentId, updatedPaymentData: formatedData }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        toast.success("Payment updated successfully!");
+        getRenterDetails(renterId);
+      } else
+      throw new Error(result.msg || "Failed to update payment");
+
+      // console.log("Payment updated successfully:", result);
+      // return result;
+    } catch (error) {
+      console.error("Error updating payment:", error.message);
+      throw error;
+    }
+    finally{
+      setShowEditPaymentDialog(false);
+      // setIsSubmitting(false);
+    }
+  }
+
+  // === Get a Payment (using _id) of a Renter ===
+  const getPaymentDetails = async (paymentId) => {
+    try {
+      const response = await fetch(`/api/payment/${paymentId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        const payment = data.payment; // Payment data returned from API
+  
+        // Set default values using the payment data
+        setUpdatePaymentDefaultValues({
+          date: payment.date ? dayjs(payment.date).toDate() : new Date(),
+          rentPaid: payment.rentPaid || 0,
+          lightBillPaid: payment.lightBillPaid || 0,
+          waterBillPaid: payment.waterBillPaid || 0,
+          lightMeterReading: payment.lightMeterReading || 0,
+          paymentMode: payment.paymentMode || "Cash",
+          onlinePlatform: payment.onlinePlatform || "",
+          comments: payment.comments || "",
+        });
+      } else {
+        console.error(data.msg);
+        toast.error("Failed to fetch payment details.");
+      }
+    } catch (error) {
+      console.error("Error while fetching payment details:", error);
+      toast.error("Error while fetching payment details.");
+    }
+  };
+  
 
   // === Default values for updating a renter ===
   const updateFormDefaultValues = {
@@ -381,8 +471,9 @@ const page = () => {
                           variant="outline"
                           size="icon"
                           onClick={() => {
-                            // setSelectedPaymentId(payment._id);
-                            // setShowEditPayment(true);
+                            getPaymentDetails(payment._id);
+                            setPaymentId(payment._id);
+                            setShowEditPaymentDialog(true);
                           }}
                         >
                           <Edit2 className="h-4 w-4 text-blue-400" />
@@ -394,8 +485,6 @@ const page = () => {
                             console.log("delete btn paymentId: ",payment._id)
                             setPaymentId(payment._id);
                             setShowDeletePaymentDialog(true);
-                            // setSelectedPaymentId(payment.id);
-                            // setShowDeletePayment(true);
                           }}
                         >
                           <Trash2 className="h-4 w-4 text-red-500" />
@@ -467,30 +556,6 @@ const page = () => {
         </DialogContent>
       </Dialog>
 
-      {/* === DIALOG - DELETE RENTER === */}
-      <DeleteDialog
-        isOpen={showDeleteRenterDialog}
-        onClose={() => setShowDeleteRenterDialog(false)}
-        onConfirm={() => deleteRenter(renter._id)}
-        title="Delete Renter"
-        description="Are you sure you want to delete this renter? This action cannot be undone."
-        requireConfirmation={true}
-      />
-
-      {/* === DIALOG - TOGGLE ACTIVE/INACTIVE === */}
-      <DeleteDialog
-        isOpen={showStatusChangeDialog}
-        onClose={() => setShowStatusChangeDialog(false)}
-        onConfirm={() => toggleRenterStatus(renter._id)}
-        title={renter.isActive ? "Deactivate Renter" : "Activate Renter"}
-        description={
-          renter.isActive
-            ? "Are you sure you want to mark this renter as inactive?"
-            : "Are you sure you want to mark this renter as active?"
-        }
-        requireConfirmation={false}
-      />
-
       {/* === DIALOG - PAYMENT FORM === */}
       <Dialog open={showForm} onOpenChange={setShowForm} className="mx-3">
         <DialogContent className="p-4 max-w-3xl mx-auto">
@@ -513,6 +578,37 @@ const page = () => {
         </DialogContent>
       </Dialog>
 
+      {/* === DIALOG - EDIT PAYMENT FORM === */}
+      <Dialog open={showEditPaymentDialog} onOpenChange={setShowEditPaymentDialog} className="mx-3">
+        <DialogContent className="p-4 max-w-3xl mx-auto">
+          <div className="space-y-4">
+            {" "}
+            <DialogHeader>
+              <DialogTitle>Update Payment</DialogTitle>
+            </DialogHeader>
+            <div className="overflow-y-auto max-h-[70vh] px-3 custom-scrollbar">
+              {" "}
+              <PaymentForm
+                defaultValues={updatePaymentDefaultValues}
+                onSubmit={(formData) => updatePayment(renter._id, paymentId, formData)} 
+                // onSubmit={() => updatePayment(renter._id, paymentId,FormData)}
+                isSubmitting={isSubmitting}
+              />
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* === DIALOG - DELETE RENTER === */}
+      <DeleteDialog
+        isOpen={showDeleteRenterDialog}
+        onClose={() => setShowDeleteRenterDialog(false)}
+        onConfirm={() => deleteRenter(renter._id)}
+        title="Delete Renter"
+        description="Are you sure you want to delete this renter? This action cannot be undone."
+        requireConfirmation={true}
+      />
+
       {/* === DIALOG - DELETE A PATMENT === */}
       <DeleteDialog
         isOpen={showDeletePaymentDialog}
@@ -521,6 +617,20 @@ const page = () => {
         title="Delete Payment"
         description="Are you sure you want to delete this Payment? This action cannot be undone."
         requireConfirmation={true}
+      />
+
+      {/* === DIALOG - TOGGLE ACTIVE/INACTIVE === */}
+      <DeleteDialog
+        isOpen={showStatusChangeDialog}
+        onClose={() => setShowStatusChangeDialog(false)}
+        onConfirm={() => toggleRenterStatus(renter._id)}
+        title={renter.isActive ? "Deactivate Renter" : "Activate Renter"}
+        description={
+          renter.isActive
+            ? "Are you sure you want to mark this renter as inactive?"
+            : "Are you sure you want to mark this renter as active?"
+        }
+        requireConfirmation={false}
       />
 
 

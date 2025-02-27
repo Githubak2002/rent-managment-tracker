@@ -134,8 +134,8 @@ export default function Page() {
       <div className="container mx-auto py-8 px-4">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-lg sm:text-xl font-bold">Rent Management</h1>
-          <Button onClick={() => setShowForm(true)} className={`${toggleDefault}`}>
-            <Plus className="mr-2 h-4 w-4" /> Add Renter
+          <Button onClick={() => setShowForm(true)} className={`font-black ${toggleDefault}`}>
+            <Plus className="mr-2 h-4 w-4 font-black" /> Add Renter
           </Button>
         </div>
 

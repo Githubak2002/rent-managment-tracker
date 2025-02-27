@@ -104,6 +104,105 @@ export async function POST(request) {
   }
 }
 
+
+// ✅ Update Payment of a Renter
+// ✅ Update Payment of a Renter
+export async function PUT(request) {
+  const { renterId, paymentId, updatedPaymentData } = await request.json();
+
+  try {
+    await connectDB();
+
+    // Find the renter and update the specific payment
+    const renter = await Renter.findOneAndUpdate(
+      { _id: renterId, "payments._id": paymentId }, // Find the renter and payment
+      { $set: { "payments.$": updatedPaymentData } }, // Update the payment
+      { new: true } // Return the updated document
+    );
+
+    if (!renter) {
+      return NextResponse.json(
+        { success: false, msg: "Renter or Payment not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(
+      { success: true, msg: "Payment updated successfully", renter },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error in updating payment → ", error);
+    return NextResponse.json(
+      { success: false, msg: "Failed to update payment", error: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+// export async function PUT(request) {
+//   const { renterId, paymentId, updatedPaymentData } = await request.json(); 
+
+//   try {
+//     await connectDB(); 
+
+//     const renter = await Renter.findById(renterId); 
+
+//     if (!renter) {
+//       return NextResponse.json(
+//         {
+//           success: false,
+//           msg: "Renter not found",
+//           error: "Renter not found",
+//         },
+//         { status: 404 }
+//       );
+//     }
+
+//     // Find the payment inside the payments array and update it
+//     const paymentIndex = renter.payments.findIndex(payment => payment._id.toString() === paymentId);
+
+//     if (paymentIndex === -1) {
+//       return NextResponse.json(
+//         {
+//           success: false,
+//           msg: "Payment not found",
+//           error: "Payment not found",
+//         },
+//         { status: 404 }
+//       );
+//     }
+
+//     // Update the payment data
+//     renter.payments[paymentIndex] = {
+//       ...renter.payments[paymentIndex], // Retain existing values that are not being updated
+//       ...updatedPaymentData, // Apply the updated payment data
+//     };
+
+//     await renter.save(); // Save the updated renter document
+
+//     return NextResponse.json(
+//       {
+//         success: true,
+//         msg: "Payment updated successfully",
+//         error: "",
+//         renter, // Optionally return the updated renter details
+//       },
+//       { status: 200 }
+//     );
+//   } catch (error) {
+//     console.log("Error in updating payment → ", error);
+//     return NextResponse.json(
+//       {
+//         success: false,
+//         msg: "Failed to update payment",
+//         error: error.message,
+//       },
+//       { status: 500 }
+//     );
+//   }
+// }
+
 // ✅ Delete a Payment of a Renter
 export async function DELETE(req) {
   try {
