@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 
-const PUBLIC_ROUTES = ['/login']; // Add public routes here
+const PUBLIC_ROUTES = ['/login','/']; // Add public routes here
 const PROTECTED_ROUTES = ['/rent', '/api/renters', '/api/renterdetails/:id', '/api/payment']; // Add protected routes here
 
 export async function middleware(request) {

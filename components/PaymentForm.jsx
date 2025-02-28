@@ -201,7 +201,7 @@ const PaymentForm = ({ defaultValues, onSubmit, isSubmitting }) => {
         {/* Submit Button */}
         <Button type="submit" className="w-full" disabled={isSubmitting}>
           {/* Submit */}
-          {defaultValues._id ? "Update Payment" : "Add Payment"}
+          {defaultValues.lightMeterReading ? "Update Payment" : "Add Payment"}
         </Button>
       </form>
     </Form>

@@ -9,7 +9,7 @@ export default function Home() {
 
       <div className="mt-10 flex flex-col space-y-3 text-blue-500">
         <Link href="/login">Login → </Link>
-        <Link href="/rent">Managee Rent → </Link>
+        <Link href="/rent">Manage Rent → </Link>
       </div>
 
     </section>
