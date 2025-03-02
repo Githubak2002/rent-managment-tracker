@@ -106,7 +106,6 @@ export async function POST(request) {
 
 
 // ✅ Update Payment of a Renter
-// ✅ Update Payment of a Renter
 export async function PUT(request) {
   const { renterId, paymentId, updatedPaymentData } = await request.json();
 

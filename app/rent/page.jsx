@@ -124,6 +124,7 @@ export default function Page() {
 
   const defaultValues = {
     name: "",
+    phoneNumber:"",
     moveInDate: new Date(),
     initialLightMeterReading: 0,
     comments: "",

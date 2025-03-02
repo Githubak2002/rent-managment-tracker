@@ -347,6 +347,7 @@ const page = () => {
   // === Default values for updating a renter ===
   const updateFormDefaultValues = {
     _id: renter._id,
+    phoneNumber: renter.phoneNumber,
     name: renter.name,
     moveInDate: renter.moveInDate
       ? dayjs(renter.moveInDate).toDate()
@@ -426,9 +427,9 @@ const page = () => {
         {/* <CardContent className=""> */}
 
         <CardContent className="px-0 sm:px-4">
-        <main className="px-2 sm:px-0">
+        <main className="px-3 sm:px-0">
 
-          <div className="flex-col flex sm:grid sm:grid-cols-2 sm:gap-4 ">
+          <div className="flex-col flex sm:grid sm:grid-cols-2 sm:gap-2 ">
             <div className="flex justify-between sm:block">
               <p className="mb-1">Move-in Date</p>
               <p className="text-sm sm:text-lg font-bold">
@@ -436,15 +437,23 @@ const page = () => {
               </p>
             </div>
             <div className="flex justify-between sm:block">
+              <p className="mb-1">Phone No</p>
+              <p className="text-sm sm:text-lg">
+                {renter.phoneNumber}
+              </p>
+            </div>
+            <div className="flex justify-between sm:block">
               <p className="mb-1">Initial Light Meter Reading</p>
-              <p className="text-lg font-bold">
+              <p className="text-sm sm:text-lg font-bold">
                 {renter.initialLightMeterReading}
               </p>
             </div>
-          </div>
-          <div className="flex flex-col sm:bloc mb-3">
-            <p className="mb-1">Commetns</p>
-            <p className=" text-md text-[#797b7f]">{renter.comments}</p>
+
+            <div className="flex flex-col sm:bloc mb-3">
+              <p className="mb-1">Commetns</p>
+              <p className=" text-md text-[#797b7f]">{renter.comments}</p>
+            
+            </div>
           </div>
 
           <div className="flex justify-between items-center mb-4">

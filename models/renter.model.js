@@ -13,6 +13,11 @@ const PaymentSchema = new mongoose.Schema({
 
 const RenterSchema = new mongoose.Schema({
   name: { type: String, required: true }, // Name of the renter
+  phoneNumber: { 
+    type: String, 
+    required: true, 
+    match: [/^\d{10}$/, "Please provide a valid 10-digit phone number"] 
+  },
   moveInDate: { type: String, required: true }, // Move-in date
   initialLightMeterReading: { type: Number, required: true }, // Initial light meter reading
   comments: { type: String, default: "" }, // General comments

@@ -12,19 +12,19 @@ import dayjs from "dayjs";
 import "antd/dist/reset.css";
 import { useEffect } from "react";
 
-// import toast from "react-hot-toast";
-
 // ✅ Define the Zod Schema
 const formSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters long."),
+  phoneNumber: z.string()
+    .min(10, "Phone number must be at least 10 digits long.")
+    .max(10, "Phone number must be exactly 10 digits long.")
+    .regex(/^\d+$/, "Phone number must contain only digits."),
   moveInDate: z.date(),
   initialLightMeterReading: z.number().min(0, "Meter reading cannot be negative"),
   comments: z.string().optional(),
 });
 
-
 const RenterForm = ({ defaultValues, onSubmit, isSubmitting }) => {
-
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues,
@@ -43,6 +43,17 @@ const RenterForm = ({ defaultValues, onSubmit, isSubmitting }) => {
           <FormItem>
             <FormLabel>Name</FormLabel>
             <FormControl><Input {...field} placeholder="Enter renter's name" /></FormControl>
+            <FormMessage />
+          </FormItem>
+        )} />
+
+        {/* ✅ Phone Number Field */}
+        <FormField control={form.control} name="phoneNumber" render={({ field }) => (
+          <FormItem>
+            <FormLabel>Phone Number</FormLabel>
+            <FormControl>
+              <Input {...field} placeholder="Enter phone number" />
+            </FormControl>
             <FormMessage />
           </FormItem>
         )} />
@@ -113,8 +124,8 @@ export default RenterForm;
 // import dayjs from "dayjs";
 // import "antd/dist/reset.css";
 // import { useEffect } from "react";
-// import toast from "react-hot-toast";
-// import useStore from "@/lib/store";
+
+// // import toast from "react-hot-toast";
 
 // // ✅ Define the Zod Schema
 // const formSchema = z.object({
@@ -124,88 +135,22 @@ export default RenterForm;
 //   comments: z.string().optional(),
 // });
 
-// // ✅ Date Formatting Helper
-// const formatDate = (date) => dayjs(date).format("DD/MMMM/YYYY");
 
-// const RenterForm = ({
-
-// }) => {
-
-//   const {
-//     addRenter,
-//     setShowForm,
-//     selectedRenter,
-//     updateRenter,
-//     setShowEditRenter,
-//     setSelectedRenter,
-//   } = useStore();
-  
-//   const isEditing = !!selectedRenter; // ✅ Check if editing
-
-//   // ✅ Fix: Ensure `defaultValues` is properly structured
-//   const defaultValues = selectedRenter
-//     ? {
-//         name: selectedRenter.name || "",
-//         moveInDate: selectedRenter.moveInDate ? dayjs(selectedRenter.moveInDate).toDate() : new Date(),
-//         initialLightMeterReading: selectedRenter.initialLightMeterReading || 0,
-//         comments: selectedRenter.comments || "",
-//       }
-//     : {
-//         name: "",
-//         moveInDate: new Date(),
-//         initialLightMeterReading: 0,
-//         comments: "",
-//       };
+// const RenterForm = ({ defaultValues, onSubmit, isSubmitting }) => {
 
 //   const form = useForm({
 //     resolver: zodResolver(formSchema),
 //     defaultValues,
 //   });
 
-//   // ✅ Fix: Reset form values when `selectedRenter` changes
+//   // ✅ Fix: Reset form values when `defaultValues` changes
 //   useEffect(() => {
 //     form.reset(defaultValues);
-//   }, [selectedRenter, form]);
-
-//   const handleSubmit = async (formData) => {
-//     console.log("Form data: ", formData);
-//     const formattedData = {
-//       ...formData,
-//       moveInDate: formatDate(formData.moveInDate),
-//     };
-
-//     const endpoint = isEditing ? "/api/renters" : "/api/renters";
-//     const method = isEditing ? "PUT" : "POST";
-
-//     const res = await fetch(endpoint, {
-//       method,
-//       headers: { "Content-Type": "application/json" },
-//       body: JSON.stringify({ ...formattedData, _id: selectedRenter?._id }),
-//     });
-
-//     const data = await res.json();
-
-//     console.log("api response: ", data);
-
-//     if (data.success && data.newRenter) {
-//       toast.success(isEditing ? "Renter updated successfully!" : "Renter added successfully!");
-
-//       if (isEditing) {
-//         updateRenter(data.newRenter);
-//         setShowEditRenter(false);
-//         setSelectedRenter(null); // ✅ Clear selection after editing
-//       } else {
-//         addRenter(data.newRenter);
-//         setShowForm(false);
-//       }
-//     } else {
-//       toast.error("Failed to save renter");
-//     }
-//   };
+//   }, [defaultValues, form]);
 
 //   return (
 //     <Form {...form}>
-//       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 p-4 bg-white">
+//       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 p-4 bg-white">
 //         {/* ✅ Name Field */}
 //         <FormField control={form.control} name="name" render={({ field }) => (
 //           <FormItem>
@@ -214,7 +159,7 @@ export default RenterForm;
 //             <FormMessage />
 //           </FormItem>
 //         )} />
-        
+
 //         {/* ✅ Move-in Date Picker */}
 //         <FormField control={form.control} name="moveInDate" render={({ field }) => (
 //           <FormItem>
@@ -255,8 +200,8 @@ export default RenterForm;
 //         )} />
 
 //         {/* ✅ Submit Button */}
-//         <Button type="submit" className="w-full">
-//           {isEditing ? "Update Renter" : "Save Renter"}
+//         <Button type="submit" className="w-full" disabled={isSubmitting}>
+//           {defaultValues._id ? "Update Renter" : "Save Renter"} 
 //         </Button>
 //       </form>
 //     </Form>
@@ -264,3 +209,6 @@ export default RenterForm;
 // };
 
 // export default RenterForm;
+
+
+

@@ -31,10 +31,11 @@ export async function GET() {
 export async function POST(req) {
   try {
     await connectDB();
-    const { name, moveInDate, initialLightMeterReading, comments } = await req.json();
+    const { name, phoneNumber, moveInDate, initialLightMeterReading, comments } = await req.json();
 
     const newRenter = new Renter({
       name,
+      phoneNumber,
       moveInDate,
       initialLightMeterReading,
       comments,
@@ -65,11 +66,11 @@ export async function POST(req) {
 export async function PUT(req) {
   try {
     await connectDB();
-    const { _id, name, moveInDate, initialLightMeterReading, comments } = await req.json();
+    const { _id, phoneNumber, name, moveInDate, initialLightMeterReading, comments } = await req.json();
 
     const updatedRenter = await Renter.findByIdAndUpdate(
       _id,
-      { name, moveInDate, initialLightMeterReading, comments },
+      { name, phoneNumber, moveInDate, initialLightMeterReading, comments },
       { new: true }
     );
 
