@@ -470,7 +470,7 @@ const page = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0 sm:gap-4">
               {/* <div className="grid gap-4"> */}
               {renter.payments.reverse().map((payment) => (
-                <Card key={payment._id} className="rounded-none px-0">
+                <Card key={payment._id} className="rounded-none px-0 border-x-0 sm:border">
                   <CardContent className="pt-6">
                     <div className="flex justify-between items-start mb-4">
                       <div>
