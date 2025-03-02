@@ -1,5 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Grechen+Fuemen&display=swap');
 
+
+@import url('https://fonts.googleapis.com/css2?family=RocknRoll+One&display=swap');
+
+
+@import url('https://fonts.googleapis.com/css2?family=Kurale&family=RocknRoll+One&display=swap');
+
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -11,6 +18,9 @@ body {
   /* font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; */
   font-family: "Grechen Fuemen", serif;
   /* font-family: "Caveat", serif; */
+  font-family: "RocknRoll One", sans-serif;
+  font-family: "Kurale", serif;
+
 
   /* font-optical-sizing: auto; */
 

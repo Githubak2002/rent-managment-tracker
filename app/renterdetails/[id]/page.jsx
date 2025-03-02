@@ -423,7 +423,11 @@ const page = () => {
           </div>
         </CardHeader>
 
-        <CardContent>
+        {/* <CardContent className=""> */}
+
+        <CardContent className="px-0 sm:px-4">
+        <main className="px-2 sm:px-0">
+
           <div className="flex-col flex sm:grid sm:grid-cols-2 sm:gap-4 ">
             <div className="flex justify-between sm:block">
               <p className="mb-1">Move-in Date</p>
@@ -449,13 +453,15 @@ const page = () => {
               <Plus className="mr-2 h-4 w-4" /> Add Payment
             </Button>
           </div>
+        </main>
+
 
           {/* === RENTER PAYMENTS === */}
           {payments.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0 sm:gap-4">
               {/* <div className="grid gap-4"> */}
               {renter.payments.reverse().map((payment) => (
-                <Card key={payment._id}>
+                <Card key={payment._id} className="rounded-none px-0">
                   <CardContent className="pt-6">
                     <div className="flex justify-between items-start mb-4">
                       <div>
