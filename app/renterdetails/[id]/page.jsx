@@ -22,7 +22,8 @@ import useStore from "@/lib/store";
 import toast from "react-hot-toast";
 import dayjs from "dayjs";
 import PaymentForm from "@/components/PaymentForm";
-import LoadingSpinner from "@/components/LoadingSpinner";
+// import LoadingSpinner from "@/components/Loader";
+import Loader from "@/components/Loader";
 
 // ✅ Date Formatting Helper
 const formatDate = (date) => dayjs(date).format("DD/MMMM/YYYY");
@@ -383,7 +384,7 @@ const page = () => {
 
       {isLoading ? (
         <div className="min-h-[400px] flex items-center justify-center">
-          <LoadingSpinner size="lg" />
+          <Loader />
         </div>
       ) : (
         <Card>
@@ -475,7 +476,7 @@ const page = () => {
             {/* === RENTER PAYMENTS === */}
             {isLoadingPayments ? (
               <div className="min-h-[200px] flex items-center justify-center">
-                <LoadingSpinner />
+                <Loader />
               </div>
             ) : payments.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0 sm:gap-4">

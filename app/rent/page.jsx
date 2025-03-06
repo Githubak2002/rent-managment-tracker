@@ -1,11 +1,5 @@
 "use client";
 
-// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-// import { Badge } from "@/components/ui/badge";
-// import { Calendar, Gauge } from "lucide-react";
-// import { formatDate } from "@/lib/utils";
-
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -22,10 +16,9 @@ import {
 import toast from "react-hot-toast";
 
 import RenterCard from "@/components/RenterCard";
+import Loader from "@/components/Loader";
 import useStore from "@/lib/store"; // ✅ Import Zustand store
-// import { DialogOverlay } from "@radix-ui/react-dialog";
 
-// import RenterForm from "./RenterForm";
 
 import RentForm from "@/components/RenterForm";
 import dayjs from "dayjs";
@@ -46,6 +39,8 @@ export default function Page() {
     isSubmitting,
     setIsSubmitting,
   } = useStore();
+
+  const [loading, setLoading] = useState(true); // State for managing loading status
 
   useEffect(() => {
     const getRenters = async () => {
@@ -84,6 +79,8 @@ export default function Page() {
 
       // Handle network errors or other issues
       // toast.error('An error occurred while fetching renters');
+    } finally {
+      setLoading(false); 
     }
   };
 
@@ -140,7 +137,7 @@ export default function Page() {
           </Button>
         </div>
 
-        <div className="space-y-8">
+        {/* <div className="space-y-8">
           {renters.length > 0 ? (
             <>
               <section>
@@ -172,7 +169,47 @@ export default function Page() {
               <p className="text-muted-foreground">No renters added yet.</p>
             </div>
           )}
-        </div>
+        </div> */}
+
+<main className="space-y-8">
+          {loading ? (
+            // Show the loader while fetching data
+            <div className="flex justify-center items-center py-12">
+              <Loader />
+            </div>
+          ) : renters.length > 0 ? (
+            <>
+              <section>
+                <h2 className="text-xl font-semibold mb-4">Active Renters</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {renters
+                    .filter((renter) => renter.active)
+                    .reverse()
+                    .map((renter) => (
+                      <RenterCard key={renter._id} renter={renter} />
+                    ))}
+                </div>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-semibold mb-4">Inactive Renters</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {renters
+                    .filter((renter) => renter.active === false)
+                    .reverse()
+                    .map((renter) => (
+                      <RenterCard key={renter._id} renter={renter} />
+                    ))}
+                </div>
+              </section>
+            </>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">No renters added yet.</p>
+            </div>
+          )}
+        </main>
+
 
         {/* === Dialog for Adding Renter === */}
         <Dialog open={showForm} onOpenChange={setShowForm}>
