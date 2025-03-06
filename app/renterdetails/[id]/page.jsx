@@ -22,12 +22,14 @@ import useStore from "@/lib/store";
 import toast from "react-hot-toast";
 import dayjs from "dayjs";
 import PaymentForm from "@/components/PaymentForm";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 // ✅ Date Formatting Helper
 const formatDate = (date) => dayjs(date).format("DD/MMMM/YYYY");
 
 const toggleDefault = "bg-gradient-to-r from-[#8b6add] to-[#425bc3]";
-const toggleSecondary =  "border-transparent bg-neutral-100 text-neutral-900 hover:bg-neutral-100/80";
+const toggleSecondary =
+  "border-transparent bg-neutral-100 text-neutral-900 hover:bg-neutral-100/80";
 
 const page = () => {
   const params = useParams();
@@ -65,6 +67,8 @@ const page = () => {
     onlinePlatform: "",
     comments: "",
   });
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingPayments, setIsLoadingPayments] = useState(false);
 
   useEffect(() => {
     const id = params.id.toString(); // Ensure the ID is a string
@@ -78,6 +82,7 @@ const page = () => {
   // === Fetch Renter details ===
   const getRenterDetails = async (id) => {
     try {
+      setIsLoading(true);
       const res = await fetch(`/api/renterdetails/${id}`, {
         method: "GET",
         headers: {
@@ -89,17 +94,29 @@ const page = () => {
       const data = await res.json();
 
       if (res.ok) {
-        console.log("Renter details:", data.renter);
-        // console.log("Renter move in date:", data.renter.moveInDate);
-        // console.log("Renter details payments:", data.renter.payments.length);
-        // console.log("type of:", typeof data.renter.payments);
         setRenter(data.renter);
-        setPayments(data.renter.payments);
+        // Fetch payments for this renter
+        setIsLoadingPayments(true);
+        const paymentsRes = await fetch(`/api/payment?renterId=${id}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        });
+
+        const paymentsData = await paymentsRes.json();
+        if (paymentsRes.ok) {
+          setPayments(paymentsData.payments);
+        }
       } else {
         console.error("Failed to fetch renter details:", data.error);
       }
     } catch (error) {
       console.error("Error fetching renter details:", error);
+    } finally {
+      setIsLoading(false);
+      setIsLoadingPayments(false);
     }
   };
 
@@ -107,8 +124,6 @@ const page = () => {
   const handleAddPayment = async (formData) => {
     try {
       setIsSubmitting(true);
-
-      // console.log("Form data: ", formData);
 
       const formattedData = {
         renterId: renter._id,
@@ -127,16 +142,16 @@ const page = () => {
 
       const data = await response.json();
 
-      if (data.success) {
-        console.log("Payment added successfully:", data.payment);
+      if (response.ok) {
         setShowForm(false);
         toast.success("Payment added successfully!");
+        getRenterDetails(renter._id);
       } else {
-        toast.error("Failed to add payment.");
+        throw new Error(data.msg || "Failed to add payment");
       }
     } catch (error) {
-      console.log("Error adding new payment  → ", error);
-      toast.error("Error adding payment details.");
+      console.error("Error adding payment:", error);
+      toast.error(error.message || "Failed to add payment");
     } finally {
       setIsSubmitting(false);
     }
@@ -232,81 +247,72 @@ const page = () => {
     }
   };
 
-  // === Delete a Payment of a Renter ===
+  // === Delete a Payment ===
   const deletePayment = async (renterId, paymentId) => {
     try {
       setIsSubmitting(true);
-      const response = await fetch("/api/payment", {
+      const response = await fetch(`/api/payment/${paymentId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify({ renterId, paymentId }),
       });
-  
+
       const data = await response.json();
-  
+
       if (response.ok) {
-        // console.log(data.msg); 
         setShowDeletePaymentDialog(false);
         toast.success("Payment deleted successfully!");
         getRenterDetails(renterId);
-        // You can update your UI or refetch data to show updated payments
       } else {
-        console.error(data.msg); // Handle error message
+        throw new Error(data.msg || "Failed to delete payment");
       }
     } catch (error) {
-      console.error("Error while deleting payment:", error);
-      toast.error("Error while deleting payment.");
-    }
-    finally{
+      console.error("Error deleting payment:", error);
+      toast.error(error.message || "Failed to delete payment");
+    } finally {
       setIsSubmitting(false);
     }
   };
 
-  // === Update a Payment of a Renter ===
+  // === Update a Payment ===
   const updatePayment = async (renterId, paymentId, formData) => {
     try {
-      // setIsSubmitting(true);
+      setIsSubmitting(true);
 
-      // console.dir({ renterId, paymentId, formData });
-
-      let formatedData = {
+      const formattedData = {
         ...formData,
         date: formatDate(formData.date),
       };
 
-      const response = await fetch("/api/payment", {
+      const response = await fetch(`/api/payment/${paymentId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify({ renterId, paymentId, updatedPaymentData: formatedData }),
+        body: JSON.stringify(formattedData),
       });
 
-      const result = await response.json();
+      const data = await response.json();
 
       if (response.ok) {
+        setShowEditPaymentDialog(false);
         toast.success("Payment updated successfully!");
         getRenterDetails(renterId);
-      } else
-      throw new Error(result.msg || "Failed to update payment");
-
-      // console.log("Payment updated successfully:", result);
-      // return result;
+      } else {
+        throw new Error(data.msg || "Failed to update payment");
+      }
     } catch (error) {
-      console.error("Error updating payment:", error.message);
-      throw error;
+      console.error("Error updating payment:", error);
+      toast.error(error.message || "Failed to update payment");
+    } finally {
+      setIsSubmitting(false);
     }
-    finally{
-      setShowEditPaymentDialog(false);
-      // setIsSubmitting(false);
-    }
-  }
+  };
 
-  // === Get a Payment (using _id) of a Renter ===
+  // === Get a Payment Details ===
   const getPaymentDetails = async (paymentId) => {
     try {
       const response = await fetch(`/api/payment/${paymentId}`, {
@@ -316,13 +322,12 @@ const page = () => {
         },
         credentials: "include",
       });
-  
+
       const data = await response.json();
-  
+
       if (response.ok) {
-        const payment = data.payment; // Payment data returned from API
-  
-        // Set default values using the payment data
+        const payment = data.payment;
+
         setUpdatePaymentDefaultValues({
           date: payment.date ? dayjs(payment.date).toDate() : new Date(),
           rentPaid: payment.rentPaid || 0,
@@ -334,15 +339,13 @@ const page = () => {
           comments: payment.comments || "",
         });
       } else {
-        console.error(data.msg);
-        toast.error("Failed to fetch payment details.");
+        throw new Error(data.msg || "Failed to fetch payment details");
       }
     } catch (error) {
-      console.error("Error while fetching payment details:", error);
-      toast.error("Error while fetching payment details.");
+      console.error("Error fetching payment details:", error);
+      toast.error(error.message || "Failed to fetch payment details");
     }
   };
-  
 
   // === Default values for updating a renter ===
   const updateFormDefaultValues = {
@@ -375,186 +378,200 @@ const page = () => {
         className="mb-6 text-blue-500"
         onClick={() => router.push("/rent")}
       >
-        <ArrowLeft className="mr-2 h-4 w-4 " /> Back to Home
+        <ArrowLeft className="mr-2 h-4 w-4" /> Back to Home
       </Button>
 
-      {/* === RENTER DETAILS === */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="text-2xl font-bold text-purple-500">
-              {renter.name}
-            </CardTitle>
-            <div className="flex items-center gap-2 mt-2">
-              <Badge className={renter.active ? toggleDefault : toggleSecondary}>
-              {/* <Badge variant={renter.active ? "default" : "secondary"}> */}
+      {isLoading ? (
+        <div className="min-h-[400px] flex items-center justify-center">
+          <LoadingSpinner size="lg" />
+        </div>
+      ) : (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-2xl font-bold text-purple-500">
+                {renter.name}
+              </CardTitle>
+              <div className="flex items-center gap-2 mt-2">
+                <Badge
+                  className={renter.active ? toggleDefault : toggleSecondary}
+                >
+                  {/* <Badge variant={renter.active ? "default" : "secondary"}> */}
 
-                {renter.active ? "Active" : "Inactive"}
-              </Badge>
+                  {renter.active ? "Active" : "Inactive"}
+                </Badge>
+              </div>
             </div>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              className="text-blue-500"
-              variant="outline"
-              size="icon"
-              onClick={() => setShowEditRenter(true)}
-            >
-              <Edit2 className="h-4 w-4" />
-            </Button>
-            <Button
-              className="text-orange-500"
-              variant="outline"
-              size="icon"
-              onClick={() => setShowStatusChangeDialog(true)}
-            >
-              {renter.active ? (
-                <PowerOff className="h-4 w-4" />
-              ) : (
-                <Power className="h-4 w-4" />
-              )}
-            </Button>
-            <Button
-              variant="destructive"
-              size="icon"
-              onClick={() => setShowDeleteRenterDialog(true)}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
-        </CardHeader>
-
-        {/* <CardContent className=""> */}
-
-        <CardContent className="px-0 sm:px-4">
-        <main className="px-3 sm:px-0">
-
-          <div className="flex-col flex sm:grid sm:grid-cols-2 sm:gap-2 ">
-            <div className="flex justify-between sm:block">
-              <p className="mb-1">Move-in Date</p>
-              <p className="text-sm sm:text-lg font-bold">
-                {renter.moveInDate}
-              </p>
+            <div className="flex gap-2">
+              <Button
+                className="text-blue-500"
+                variant="outline"
+                size="icon"
+                onClick={() => setShowEditRenter(true)}
+              >
+                <Edit2 className="h-4 w-4" />
+              </Button>
+              <Button
+                className="text-orange-500"
+                variant="outline"
+                size="icon"
+                onClick={() => setShowStatusChangeDialog(true)}
+              >
+                {renter.active ? (
+                  <PowerOff className="h-4 w-4" />
+                ) : (
+                  <Power className="h-4 w-4" />
+                )}
+              </Button>
+              <Button
+                variant="destructive"
+                size="icon"
+                onClick={() => setShowDeleteRenterDialog(true)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
             </div>
-            <div className="flex justify-between sm:block">
-              <p className="mb-1">Phone No</p>
-              <p className="text-sm sm:text-lg">
-                {renter.phoneNumber}
-              </p>
-            </div>
-            <div className="flex justify-between sm:block">
-              <p className="mb-1">Initial Light Meter Reading</p>
-              <p className="text-sm sm:text-lg font-bold">
-                {renter.initialLightMeterReading}
-              </p>
-            </div>
+          </CardHeader>
 
-            <div className="flex flex-col sm:bloc mb-3">
-              <p className="mb-1">Commetns</p>
-              <p className=" text-md text-[#797b7f]">{renter.comments}</p>
-            
-            </div>
-          </div>
+          {/* <CardContent className=""> */}
 
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold">Payment History</h3>
-            <Button onClick={() => setShowForm(true)} className={`${toggleDefault}`}>
-              <Plus className="mr-2 h-4 w-4" /> Add Payment
-            </Button>
-          </div>
-        </main>
+          <CardContent className="px-0 sm:px-4">
+            <main className="px-3 sm:px-0">
+              <div className="flex-col flex sm:grid sm:grid-cols-2 sm:gap-2 ">
+                <div className="flex justify-between sm:block">
+                  <p className="mb-1">Move-in Date</p>
+                  <p className="text-sm sm:text-lg font-bold">
+                    {renter.moveInDate}
+                  </p>
+                </div>
+                <div className="flex justify-between sm:block">
+                  <p className="mb-1">Phone No</p>
+                  <p className="text-sm sm:text-lg">{renter.phoneNumber}</p>
+                </div>
+                <div className="flex justify-between sm:block">
+                  <p className="mb-1">Initial Light Meter Reading</p>
+                  <p className="text-sm sm:text-lg font-bold">
+                    {renter.initialLightMeterReading}
+                  </p>
+                </div>
 
+                <div className="flex flex-col sm:bloc mb-3">
+                  <p className="mb-1">Commetns</p>
+                  <p className=" text-md text-[#797b7f]">{renter.comments}</p>
+                </div>
+              </div>
 
-          {/* === RENTER PAYMENTS === */}
-          {payments.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0 sm:gap-4">
-              {/* <div className="grid gap-4"> */}
-              {renter.payments.reverse().map((payment) => (
-                <Card key={payment._id} className="rounded-none px-0 border-x-0 sm:border">
-                  <CardContent className="pt-6">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <div className="font-semibold">
-                          {formatDate(payment.date)}
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold">Payment History</h3>
+                <Button
+                  onClick={() => setShowForm(true)}
+                  className={`${toggleDefault}`}
+                >
+                  <Plus className="mr-2 h-4 w-4" /> Add Payment
+                </Button>
+              </div>
+            </main>
+
+            {/* === RENTER PAYMENTS === */}
+            {isLoadingPayments ? (
+              <div className="min-h-[200px] flex items-center justify-center">
+                <LoadingSpinner />
+              </div>
+            ) : payments.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0 sm:gap-4">
+                {payments.map((payment) => (
+                  <Card
+                    key={payment._id}
+                    className="rounded-none px-0 border-x-0 sm:border"
+                  >
+                    <CardContent className="pt-6">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <div className="font-semibold">
+                            {formatDate(payment.date)}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            Reading: {payment.lightMeterReading}
+                          </div>
                         </div>
-                        <div className="text-sm text-muted-foreground">
-                          Reading: {payment.lightMeterReading}
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => {
+                              getPaymentDetails(payment._id);
+                              setPaymentId(payment._id);
+                              setShowEditPaymentDialog(true);
+                            }}
+                          >
+                            <Edit2 className="h-4 w-4 text-blue-400" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => {
+                              console.log(
+                                "delete btn paymentId: ",
+                                payment._id
+                              );
+                              setPaymentId(payment._id);
+                              setShowDeletePaymentDialog(true);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4 text-red-500" />
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => {
-                            getPaymentDetails(payment._id);
-                            setPaymentId(payment._id);
-                            setShowEditPaymentDialog(true);
-                          }}
-                        >
-                          <Edit2 className="h-4 w-4 text-blue-400" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => { 
-                            console.log("delete btn paymentId: ",payment._id)
-                            setPaymentId(payment._id);
-                            setShowDeletePaymentDialog(true);
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4 text-red-500" />
-                        </Button>
-                      </div>
-                    </div>
 
-                    <div className="grid gap-2">
-                      <div className="flex justify-between">
-                        <span>Rent:</span>
-                        <span>₹ {payment.rentPaid}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Light Bill:</span>
-                        <span>₹ {payment.lightBillPaid}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Water Bill:</span>
-                        <span>₹ {payment.waterBillPaid}</span>
-                      </div>
-                      <div className="flex justify-between font-bold">
-                        <span>Total:</span>
-                        <span>
-                          ₹{" "}
-                          {payment.lightBillPaid +
-                            payment.waterBillPaid +
-                            payment.rentPaid}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-sm text-[#797b7f]">
-                        <span>Payment Mode:</span>
-                        <span>
-                          {payment.paymentMode}
-                          {payment.onlinePlatform &&
-                            ` (${payment.onlinePlatform})`}
-                        </span>
-                      </div>
-                      {payment.comments && (
-                        <div className="mt-0 text-sm text-[#797b7f]">
-                          <span className="">Note: </span>
-                          {payment.comments}
+                      <div className="grid gap-2">
+                        <div className="flex justify-between">
+                          <span>Rent:</span>
+                          <span>₹ {payment.rentPaid}</span>
                         </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <p className="text-center py-8 text-muted-foreground">
-              No payments recorded yet.
-            </p>
-          )}
-        </CardContent>
-      </Card>
+                        <div className="flex justify-between">
+                          <span>Light Bill:</span>
+                          <span>₹ {payment.lightBillPaid}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Water Bill:</span>
+                          <span>₹ {payment.waterBillPaid}</span>
+                        </div>
+                        <div className="flex justify-between font-bold">
+                          <span>Total:</span>
+                          <span>
+                            ₹{" "}
+                            {payment.lightBillPaid +
+                              payment.waterBillPaid +
+                              payment.rentPaid}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-sm text-[#797b7f]">
+                          <span>Payment Mode:</span>
+                          <span>
+                            {payment.paymentMode}
+                            {payment.onlinePlatform &&
+                              ` (${payment.onlinePlatform})`}
+                          </span>
+                        </div>
+                        {payment.comments && (
+                          <div className="mt-0 text-sm text-[#797b7f]">
+                            <span className="">Note: </span>
+                            {payment.comments}
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center py-8 text-muted-foreground">
+                No payments recorded yet.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* === DIALOG - EDIT RENTER DETAILS === */}
       <Dialog open={showEditRenter} onOpenChange={setShowEditRenter}>
@@ -594,7 +611,11 @@ const page = () => {
       </Dialog>
 
       {/* === DIALOG - EDIT PAYMENT FORM === */}
-      <Dialog open={showEditPaymentDialog} onOpenChange={setShowEditPaymentDialog} className="mx-3">
+      <Dialog
+        open={showEditPaymentDialog}
+        onOpenChange={setShowEditPaymentDialog}
+        className="mx-3"
+      >
         <DialogContent className="p-4 max-w-3xl mx-auto">
           <div className="space-y-4">
             {" "}
@@ -605,7 +626,9 @@ const page = () => {
               {" "}
               <PaymentForm
                 defaultValues={updatePaymentDefaultValues}
-                onSubmit={(formData) => updatePayment(renter._id, paymentId, formData)} 
+                onSubmit={(formData) =>
+                  updatePayment(renter._id, paymentId, formData)
+                }
                 // onSubmit={() => updatePayment(renter._id, paymentId,FormData)}
                 isSubmitting={isSubmitting}
               />
@@ -628,7 +651,7 @@ const page = () => {
       <DeleteDialog
         isOpen={showDeletePaymentDialog}
         onClose={() => setShowDeletePaymentDialog(false)}
-        onConfirm={() => deletePayment(renter._id,paymentId)}
+        onConfirm={() => deletePayment(renter._id, paymentId)}
         title="Delete Payment"
         description="Are you sure you want to delete this Payment? This action cannot be undone."
         requireConfirmation={true}
@@ -647,8 +670,6 @@ const page = () => {
         }
         requireConfirmation={false}
       />
-
-
     </section>
   );
 };
