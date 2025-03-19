@@ -33,20 +33,33 @@ import { DatePicker } from "antd";
 // ✅ Define the Zod Schema
 const formSchema = z.object({
   date: z.date(),
-  rentPaid: z.coerce.number().min(0, "Rent amount cannot be negative"),
-  lightBillPaid: z.coerce
-    .number()
-    .min(0, "Light bill amount cannot be negative"),
-  waterBillPaid: z.coerce
-    .number()
-    .min(0, "Water bill amount cannot be negative"),
+  rentPaid: z.number().default(0),  
+  lightBillPaid: z.number().default(0),  
+  waterBillPaid: z.number().default(0),  
   lightMeterReading: z.coerce
-    .number()
-    .min(0, "Light meter reading cannot be negative"),
-  paymentMode: z.string().nonempty("Payment mode is required"),
-  onlinePlatform: z.string().optional().nullable(),
-  comments: z.string().optional().nullable(),
+  .number()
+  .min(1, "Light meter reading required & cannot be negative"),
+  paymentMode: z.enum(['Cash', 'Online']),
+  onlinePlatform: z.string().nullable().optional(),
+  comments: z.string().nullable().optional()
 });
+
+// const formSchema = z.object({
+//   date: z.date(),
+//   rentPaid: z.coerce.number().min(0, "Rent amount cannot be negative"),
+//   lightBillPaid: z.coerce
+//     .number()
+//     .min(0, "Light bill amount cannot be negative"),
+//   waterBillPaid: z.coerce
+//     .number()
+//     .min(0, "Water bill amount cannot be negative"),
+  // lightMeterReading: z.coerce
+  //   .number()
+  //   .min(0, "Light meter reading cannot be negative"),
+  // paymentMode: z.string().nonempty("Payment mode is required"),
+  // onlinePlatform: z.string().optional().nullable(),
+  // comments: z.string().optional().nullable(),
+// });
 
 // ✅ PaymentForm Component
 // const PaymentForm = () => {

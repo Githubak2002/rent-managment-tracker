@@ -42,21 +42,21 @@ export async function POST(request) {
     }
 
     // Validate numeric fields are not negative
-    if (
-      rentPaid < 0 ||
-      lightBillPaid < 0 ||
-      waterBillPaid < 0 ||
-      lightMeterReading < 0
-    ) {
-      return NextResponse.json(
-        {
-          success: false,
-          msg: "Invalid values",
-          error: "Numeric fields cannot be negative",
-        },
-        { status: 400 }
-      );
-    }
+    // if (
+    //   rentPaid < 0 ||
+    //   lightBillPaid < 0 ||
+    //   waterBillPaid < 0 ||
+    //   lightMeterReading < 0
+    // ) {
+    //   return NextResponse.json(
+    //     {
+    //       success: false,
+    //       msg: "Invalid values",
+    //       error: "Numeric fields cannot be negative",
+    //     },
+    //     { status: 400 }
+    //   );
+    // }
 
     // Validate payment mode
     if (paymentMode === "Online" && !onlinePlatform) {
